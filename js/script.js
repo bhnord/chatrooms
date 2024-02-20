@@ -1,10 +1,17 @@
-
 let socket = io();
 let myId = -1;
-
 let spritesMap = new Map();
 let players = []
 let isStopped = true;
+const chat = document.getElementById('chat')
+const messages = document.getElementById('messages')
+const form = document.getElementById('form')
+const input = document.getElementById('input')
+const gameContainer = document.getElementById('game-container');
+
+//TODO: changeme
+const BASE_SERVER_URL = "http://localhost:3000";
+
 
 
 socket.on('move', function(p) {
@@ -15,9 +22,25 @@ socket.on('move', function(p) {
 })
 
 
+socket.on('msg', function(msg) {
+  let message = document.createElement("li")
+  message.textContent = msg
+  messages.appendChild(message)
+  chat.scrollTo(0, chat.scrollHeight);
+})
 
-//TODO: changeme
-const BASE_SERVER_URL = "http://localhost:1234";
+form.addEventListener('submit', function(e) {
+  e.preventDefault();
+  if (input.value) {
+    socket.emit('msg', input.value)
+    input.value = '';
+  }
+})
+
+
+
+
+
 
 class GameScene extends Phaser.Scene {
   constructor() {
@@ -35,13 +58,10 @@ class GameScene extends Phaser.Scene {
         frameHeight: 107
       }
     )
-
   }
 
   //init vars, define animations + sounds, display assets
   create() {
-    this.playerSpeed = 1.5;
-
     this.cursors = this.input.keyboard.addKeys(
       {
         up: Phaser.Input.Keyboard.KeyCodes.W,
@@ -49,7 +69,6 @@ class GameScene extends Phaser.Scene {
         left: Phaser.Input.Keyboard.KeyCodes.A,
         right: Phaser.Input.Keyboard.KeyCodes.D
       });
-
 
     this.anims.create({
       key: 'down',
@@ -81,7 +100,6 @@ class GameScene extends Phaser.Scene {
       frameRate: 10,
       repeat: -1
     })
-
   }
 
   //update attr of game objects per game logic
@@ -92,12 +110,11 @@ class GameScene extends Phaser.Scene {
         let sprite = this.physics.add.sprite(player.positionX, player.positionY, 'player');
         spritesMap.set(player.id, sprite)
       } else {
+        //set sprite to correct location
         let curr = spritesMap.get(player.id)
-        //        console.log(curr)
-        //        curr.x = player.positionX;
-        //       curr.y = player.positionY;
         curr.setPosition(player.positionX, player.positionY)
 
+        //set animations
         switch (player.anim) {
           case "left":
             curr.anims.play('left', true)
@@ -113,9 +130,7 @@ class GameScene extends Phaser.Scene {
             break;
           default:
             curr.anims.play('front', true)
-
         }
-
       }
     }
   }
@@ -132,16 +147,15 @@ class GameScene extends Phaser.Scene {
     if (this.cursors.up.isDown) {
       move.moveY = -1;
       isStopped = false;
-    }
-    else if (this.cursors.down.isDown) {
+    } else if (this.cursors.down.isDown) {
       move.moveY = 1;
       isStopped = false;
     }
+
     if (this.cursors.left.isDown) {
       move.moveX = -1;
       isStopped = false;
-    }
-    else if (this.cursors.right.isDown) {
+    } else if (this.cursors.right.isDown) {
       move.moveX = 1;
       isStopped = false;
     }
@@ -156,13 +170,30 @@ class GameScene extends Phaser.Scene {
 }
 const config = {
   type: Phaser.AUTO,
-  width: 1400,
-  height: 750,
+  scale: {
+    mode: Phaser.Scale.FIT,
+    parent: "game-container",
+    width: 1400,
+    height: 750
+  },
   backgroundColor: "#FFFFF",
-  parent: "gameContainer",
   scene: [GameScene],
   physics: {
     default: "arcade"
   },
 };
 const game = new Phaser.Game(config);
+
+document.body.addEventListener('click', function(event) {
+  if (gameContainer.contains(event.target)) {
+    //    game.input.enabled = true;
+    game.input.keyboard.enabled = true;
+    console.log("in")
+  } else {
+    game.input.keyboard.enabled = false;
+    //   game.input.enabled = false;
+    console.log("out")
+  }
+})
+
+

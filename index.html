@@ -5,14 +5,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="chatrooms">
-    <link href="css/style.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet"> 
 
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
-    <script src="/script.js" defer></script>
+    <script src="/js/script.js" defer></script>
   </head>
   <body>
-    <div class="game-div" id="game-container"></div>
+    <div class="game-div" id="game-container">
+    </div>
+    <div id="chat">
+      <ul id="messages"></ul>
+    </div>
+    <form id="form" action="">
+      <input id="input" autocomplete="off" />
+      <button>Send</button>
+    </form>
     hello
   
   </body>

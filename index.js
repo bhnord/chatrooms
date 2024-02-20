@@ -24,8 +24,11 @@ app.get('/', (req, res) => {
   console.log("dd")
 })
 
-app.get('/script.js', (req, res) => {
+app.get('/js/script.js', (req, res) => {
   res.sendFile(__dirname + "/js/script.js")
+})
+app.get('/css/style.css', (req, res) => {
+  res.sendFile(__dirname + "/css/style.css")
 })
 
 app.get('/avatarPengu', (req, res) => {
@@ -55,6 +58,12 @@ io.on('connection', (socket) => {
   //TODO: FIX CONCURRENCY
   socket.emit('playerId', currId)
 
+
+  socket.on('msg', (msg) => {
+    io.emit('msg', msg)
+    console.log("chat: " + msg)
+  })
+
   const Y_SPEED = 10;
   const X_SPEED = 10;
   socket.on('move', (msg) => {
@@ -82,10 +91,10 @@ io.on('connection', (socket) => {
     }
 
     io.emit('move', Array.from(players.values()))
-    console.log("player " + player.id + " " + JSON.stringify(player));
+    //    console.log("player " + player.id + " " + JSON.stringify(player));
   })
 })
 
-server.listen(1234, () => {
-  console.log('listening on *:3000')
+server.listen(3000, () => {
+  console.log('listening on http://localhost:3000')
 })
