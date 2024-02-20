@@ -2,10 +2,15 @@
 let socket = io();
 let myId = -1;
 
-socket.on('move', function(players) {
-  //set players to where they belong
+let spritesMap = new Map();
+let players = []
 
-  console.log(players)
+
+socket.on('move', function(p) {
+  //set players to where they belong
+  players = p;
+  //console.log(players)
+  console.log(p)
 })
 
 socket.on('playerId', function(id) {
@@ -13,40 +18,13 @@ socket.on('playerId', function(id) {
   console.log(id)
 })
 
-//temporary
-document.addEventListener('keydown', function(event) {
-  let player = {
-    player: myId,
-    moveX: 0,
-    moveY: 0
-  }
-  if (event.key == "w") {
-    player['moveY'] = 1
-  }
-  else if (event.key == "s") {
-    player['moveY'] = -1
-  }
-  else if (event.key == "a") {
-    player['moveX'] = 1
-  }
-  else if (event.key == "d") {
-    player['moveX'] = -1
-  }
-  socket.emit('move', JSON.stringify(player))
-});
-/**
-const config = {
-  width: 1400,
-  height: 750,
-  backgroundColor: "#FFFFF",
-  parent: "gameContainer",
-  scene: [GameScene],
-  physics: {
-    default: "arcade"
-  }
-};
-**/
+
+
+//TODO: changeme
 const BASE_SERVER_URL = "http://localhost:3000";
+
+
+
 
 class GameScene extends Phaser.Scene {
   constructor() {
@@ -55,12 +33,13 @@ class GameScene extends Phaser.Scene {
 
   //load assets
   preload() {
+    this.load.setBaseURL(BASE_SERVER_URL)
     this.load.spritesheet(
       "avatarPengu",
-      "https://github.com/bhnord/chatrooms/blob/main/assets/chinstrap.png?raw=true",
+      "avatarPengu",
       {
-        frameWidth: 48,
-        frameHeight: 32
+        frameWidth: 300,
+        frameHeight: 300
       }
     )
 
@@ -68,28 +47,79 @@ class GameScene extends Phaser.Scene {
 
   //init vars, define animations + sounds, display assets
   create() {
+    this.playerSpeed = 1.5;
+    //    this.pengu = this.physics.add.sprite(400, 300, 'avatarPengu')
+
+
+
+    this.cursors = this.input.keyboard.addKeys(
+      {
+        up: Phaser.Input.Keyboard.KeyCodes.W,
+        down: Phaser.Input.Keyboard.KeyCodes.S,
+        left: Phaser.Input.Keyboard.KeyCodes.A,
+        right: Phaser.Input.Keyboard.KeyCodes.D
+      });
+
 
   }
 
   //update attr of game objects per game logic
   update() {
+    this.publishInput()
+    for (let player of players) {
+      if (!spritesMap.has(player.id)) {
+        let sprite = this.physics.add.sprite(400, 300, 'avatarPengu');
+        spritesMap.set(player.id, sprite)
+      } else {
+        let curr = spritesMap.get(player.id)
+        //        console.log(curr)
+        //        curr.x = player.positionX;
+        //       curr.y = player.positionY;
+        curr.setPosition(player.positionX, player.positionY)
+        console.log(player)
 
+        console.log(curr.x + ", " + curr.y)
+      }
+    }
   }
 
 
 
 
   publishInput() {
-    if (Phaser.Input.Keyboard.JustDown(this.cursorKeys.left)) {
-      let player = {
-        player: 1,
-        move: 1
-      }
+    let player = {
+      id: myId,
+      moveX: 0,
+      moveY: 0
+    }
+
+    if (this.cursors.up.isDown) {
+      player.moveY = -1;
+    }
+    else if (this.cursors.down.isDown) {
+      player.moveY = 1;
+    }
+    if (this.cursors.left.isDown) {
+      player.moveX = -1;
+    }
+    else if (this.cursors.right.isDown) {
+      player.moveX = 1;
+    }
+
+    if (player.moveX != 0 || player.moveY != 0) {
       socket.emit('move', JSON.stringify(player))
-
-
-    } else if (Phaser.Input.Keyboard.JustDown(this.cursorKeys.right)) {
-
     }
   }
 }
+const config = {
+  type: Phaser.AUTO,
+  width: 1400,
+  height: 750,
+  backgroundColor: "#FFFFF",
+  parent: "gameContainer",
+  scene: [GameScene],
+  physics: {
+    default: "arcade"
+  },
+};
+const game = new Phaser.Game(config);

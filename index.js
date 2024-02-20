@@ -34,6 +34,10 @@ app.get('/script.js', (req, res) => {
   res.sendFile(__dirname + "/js/script.js")
 })
 
+app.get('/avatarPengu', (req, res) => {
+  res.sendFile(__dirname + "/assets/chinstrap.png")
+})
+
 io.on('connection', (socket) => {
   console.log("connected")
   socket.on('disconnect', () => {
@@ -46,21 +50,34 @@ io.on('connection', (socket) => {
   currId += 1;
 
 
+
+  const Y_SPEED = 10;
+  const X_SPEED = 10;
   socket.on('move', (msg) => {
     let move = JSON.parse(msg);
-    if (!players.has(move.player)) {
+    if (!players.has(move.id)) {
       let newPlayer = {
+        id: move.id,
         positionX: 0,
         positionY: 0
       }
-      players.set(move.player, newPlayer);
+      players.set(move.id, newPlayer);
     }
-    let player = players.get(move.player)
+    let player = players.get(move.id)
 
-    player['positionX'] += move.moveX
-    player['positionY'] += move.moveY
+    if (move.moveX == -1) {
+      player['positionX'] -= X_SPEED
+    } else if (move.moveX == 1) {
+      player['positionX'] += X_SPEED
+    }
+
+    if (move.moveY == -1) {
+      player['positionY'] -= Y_SPEED
+    } else if (move.moveY == 1) {
+      player['positionY'] += Y_SPEED
+    }
     io.emit('move', Array.from(players.values()))
-    console.log("player " + move.player + " moved");
+    console.log("player " + move.id + " " + JSON.stringify(player));
   })
 })
 
