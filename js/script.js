@@ -1,22 +1,36 @@
 
-var socket = io();
+let socket = io();
+let myId = -1;
 
 socket.on('move', function(players) {
   //set players to where they belong
+
   console.log(players)
+})
+
+socket.on('playerId', function(id) {
+  myId = id
+  console.log(id)
 })
 
 //temporary
 document.addEventListener('keydown', function(event) {
   let player = {
-    player: 1,
-    move: 0
+    player: myId,
+    moveX: 0,
+    moveY: 0
   }
   if (event.key == "w") {
-    player['move'] = 1
+    player['moveY'] = 1
   }
   else if (event.key == "s") {
-    player['move'] = -1
+    player['moveY'] = -1
+  }
+  else if (event.key == "a") {
+    player['moveX'] = 1
+  }
+  else if (event.key == "d") {
+    player['moveX'] = -1
   }
   socket.emit('move', JSON.stringify(player))
 });

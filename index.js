@@ -24,6 +24,7 @@ let players = new Map();
 let playerChannels = {};
 let gameRoom;
 let gameTickerOn = false;
+let currId = 0;
 
 app.get('/', (req, res) => {
   res.sendFile(__dirname + "/index.html")
@@ -40,19 +41,26 @@ io.on('connection', (socket) => {
   })
 
 
+  //TODO: FIX CONCURRENCY
+  socket.emit('playerId', currId)
+  currId += 1;
+
+
   socket.on('move', (msg) => {
     let move = JSON.parse(msg);
     if (!players.has(move.player)) {
       let newPlayer = {
-        position: 0
+        positionX: 0,
+        positionY: 0
       }
       players.set(move.player, newPlayer);
     }
     let player = players.get(move.player)
 
-    player['position'] += move.move
-    io.emit('move', player)
-    console.log("player " + move.player + " moved " + move.move)
+    player['positionX'] += move.moveX
+    player['positionY'] += move.moveY
+    io.emit('move', Array.from(players.values()))
+    console.log("player " + move.player + " moved");
   })
 })
 
