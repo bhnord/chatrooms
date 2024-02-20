@@ -4,27 +4,20 @@ let myId = -1;
 
 let spritesMap = new Map();
 let players = []
+let isStopped = true;
 
 
 socket.on('move', function(p) {
   //set players to where they belong
-  players = p;
+  players = Array.from(p);
   //console.log(players)
   console.log(p)
-})
-
-socket.on('playerId', function(id) {
-  myId = id
-  console.log(id)
 })
 
 
 
 //TODO: changeme
-const BASE_SERVER_URL = "http://localhost:3000";
-
-
-
+const BASE_SERVER_URL = "http://localhost:1234";
 
 class GameScene extends Phaser.Scene {
   constructor() {
@@ -35,11 +28,11 @@ class GameScene extends Phaser.Scene {
   preload() {
     this.load.setBaseURL(BASE_SERVER_URL)
     this.load.spritesheet(
-      "avatarPengu",
-      "avatarPengu",
+      "player",
+      "player",
       {
-        frameWidth: 300,
-        frameHeight: 300
+        frameWidth: 82,
+        frameHeight: 107
       }
     )
 
@@ -48,9 +41,6 @@ class GameScene extends Phaser.Scene {
   //init vars, define animations + sounds, display assets
   create() {
     this.playerSpeed = 1.5;
-    //    this.pengu = this.physics.add.sprite(400, 300, 'avatarPengu')
-
-
 
     this.cursors = this.input.keyboard.addKeys(
       {
@@ -61,6 +51,37 @@ class GameScene extends Phaser.Scene {
       });
 
 
+    this.anims.create({
+      key: 'down',
+      frames: this.anims.generateFrameNumbers('player', { start: 0, end: 2 }),
+      frameRate: 10,
+      repeat: -1
+    })
+    this.anims.create({
+      key: 'right',
+      frames: this.anims.generateFrameNumbers('player', { start: 3, end: 5 }),
+      frameRate: 10,
+      repeat: -1
+    })
+    this.anims.create({
+      key: 'up',
+      frames: this.anims.generateFrameNumbers('player', { start: 6, end: 9 }),
+      frameRate: 10,
+      repeat: -1
+    })
+    this.anims.create({
+      key: 'left',
+      frames: this.anims.generateFrameNumbers('player', { start: 10, end: 12 }),
+      frameRate: 10,
+      repeat: -1
+    })
+    this.anims.create({
+      key: 'front',
+      frames: [{ key: 'player', frame: 0 }],
+      frameRate: 10,
+      repeat: -1
+    })
+
   }
 
   //update attr of game objects per game logic
@@ -68,7 +89,7 @@ class GameScene extends Phaser.Scene {
     this.publishInput()
     for (let player of players) {
       if (!spritesMap.has(player.id)) {
-        let sprite = this.physics.add.sprite(400, 300, 'avatarPengu');
+        let sprite = this.physics.add.sprite(player.positionX, player.positionY, 'player');
         spritesMap.set(player.id, sprite)
       } else {
         let curr = spritesMap.get(player.id)
@@ -76,9 +97,25 @@ class GameScene extends Phaser.Scene {
         //        curr.x = player.positionX;
         //       curr.y = player.positionY;
         curr.setPosition(player.positionX, player.positionY)
-        console.log(player)
 
-        console.log(curr.x + ", " + curr.y)
+        switch (player.anim) {
+          case "left":
+            curr.anims.play('left', true)
+            break;
+          case "right":
+            curr.anims.play('right', true)
+            break;
+          case "up":
+            curr.anims.play('up', true)
+            break;
+          case "down":
+            curr.anims.play('down', true)
+            break;
+          default:
+            curr.anims.play('front', true)
+
+        }
+
       }
     }
   }
@@ -87,27 +124,33 @@ class GameScene extends Phaser.Scene {
 
 
   publishInput() {
-    let player = {
-      id: myId,
+    let move = {
       moveX: 0,
       moveY: 0
     }
 
     if (this.cursors.up.isDown) {
-      player.moveY = -1;
+      move.moveY = -1;
+      isStopped = false;
     }
     else if (this.cursors.down.isDown) {
-      player.moveY = 1;
+      move.moveY = 1;
+      isStopped = false;
     }
     if (this.cursors.left.isDown) {
-      player.moveX = -1;
+      move.moveX = -1;
+      isStopped = false;
     }
     else if (this.cursors.right.isDown) {
-      player.moveX = 1;
+      move.moveX = 1;
+      isStopped = false;
     }
 
-    if (player.moveX != 0 || player.moveY != 0) {
-      socket.emit('move', JSON.stringify(player))
+    if (move.moveX != 0 || move.moveY != 0) {
+      socket.emit('move', JSON.stringify(move));
+    } else if (!isStopped) {
+      socket.emit('move', JSON.stringify(move));
+      isStopped = true;
     }
   }
 }
