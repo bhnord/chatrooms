@@ -12,21 +12,21 @@ const chatBox = document.getElementById("chatroom");
 //TODO: changeme
 const BASE_SERVER_URL = "http://localhost:3000";
 
-socket.on("move", function (p) {
+socket.on("move", function(p) {
   //set players to where they belong
   players = Array.from(p);
   //console.log(players)
   console.log(p);
 });
 
-socket.on("msg", function (msg) {
+socket.on("msg", function(msg) {
   let message = document.createElement("li");
   message.textContent = msg;
   messages.appendChild(message);
   messages.scrollTo(0, messages.scrollHeight);
 });
 
-form.addEventListener("submit", function (e) {
+form.addEventListener("submit", function(e) {
   e.preventDefault();
   if (input.value) {
     socket.emit("msg", input.value);
@@ -94,33 +94,46 @@ class GameScene extends Phaser.Scene {
     this.publishInput();
     for (let player of players) {
       if (!spritesMap.has(player.id)) {
-        let sprite = this.physics.add.sprite(
+        const container = this.add.container(
           player.positionX,
-          player.positionY,
+          player.positionY
+        )
+        const sprite = this.physics.add.sprite(
+          0,
+          0,
           "player",
         );
-        spritesMap.set(player.id, sprite);
-      } else {
-        //set sprite to correct location
-        let curr = spritesMap.get(player.id);
-        curr.setPosition(player.positionX, player.positionY);
+        const text = this.add.text(0, 65, player.displayName)
+        text.setOrigin(0.5);
 
-        //set animations
+        container.add(sprite)
+        container.add(text)
+
+        spritesMap.set(player.id, container);
+      } else {
+        //set container to correct location
+        const container = spritesMap.get(player.id);
+        container.setPosition(player.positionX, player.positionY);
+
+        //get sprite from container
+        const sprite = container.list[0]
+
+        //set sprite animations
         switch (player.anim) {
           case "left":
-            curr.anims.play("left", true);
+            sprite.anims.play("left", true);
             break;
           case "right":
-            curr.anims.play("right", true);
+            sprite.anims.play("right", true);
             break;
           case "up":
-            curr.anims.play("up", true);
+            sprite.anims.play("up", true);
             break;
           case "down":
-            curr.anims.play("down", true);
+            sprite.anims.play("down", true);
             break;
           default:
-            curr.anims.play("front", true);
+            sprite.anims.play("front", true);
         }
       }
     }
@@ -160,7 +173,7 @@ class GameScene extends Phaser.Scene {
 const config = {
   type: Phaser.AUTO,
   scale: {
-    mode: Phaser.Scale.FIT,
+    mode: Phaser.Scale.RESIZE,
     parent: "game-container-inside",
   },
   backgroundColor: "#FFFFF",
@@ -172,7 +185,7 @@ const config = {
 
 const game = new Phaser.Game(config);
 
-document.body.addEventListener("click", function (event) {
+document.body.addEventListener("click", function(event) {
   if (chatBox.contains(event.target)) {
     //    game.input.enabled = true;
     game.input.keyboard.enabled = false;
