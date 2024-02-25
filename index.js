@@ -16,8 +16,11 @@ const PLAYER_SCORE_INCREMENT = 5;
 const P2_WORLD_TIME_STEP = 1 / 16;
 const GAME_TICKER_MS = 100;
 
+const TICKRATE_MS = 100;
+
 const players = new Map();
 let currId = 0;
+let change = false;
 
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/index.html");
@@ -50,10 +53,12 @@ io.on("connection", (socket) => {
   players.set(socket, newPlayer);
   io.emit("move", Array.from(players.values()));
   console.log("connected");
+  change = true;
 
   socket.on("disconnect", () => {
     console.log("disconnected");
     players.delete(socket);
+    change = true;
   });
 
   //TODO: FIX CONCURRENCY
@@ -88,10 +93,19 @@ io.on("connection", (socket) => {
       player.anim = "front";
     }
 
-    io.emit("move", Array.from(players.values()));
+    change = true;
+
+    //    io.emit("move", Array.from(players.values()));
     //    console.log("player " + player.id + " " + JSON.stringify(player));
   });
 });
+
+setInterval(function () {
+  if (change) {
+    io.emit("move", Array.from(players.values()));
+    change = false;
+  }
+}, TICKRATE_MS);
 
 server.listen(3000, () => {
   console.log("listening on http://localhost:3000");

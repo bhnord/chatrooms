@@ -3,30 +3,34 @@ let myId = -1;
 let spritesMap = new Map();
 let players = [];
 let isStopped = true;
+let timer = 0;
 const chat = document.getElementById("chat");
 const messages = document.getElementById("messages");
 const form = document.getElementById("form");
 const input = document.getElementById("input");
 const chatBox = document.getElementById("chatroom");
 
+//essentially speed
+const TICKRATE_MS = 75;
+
 //TODO: changeme
 const BASE_SERVER_URL = "http://localhost:3000";
 
-socket.on("move", function(p) {
+socket.on("move", function (p) {
   //set players to where they belong
   players = Array.from(p);
   //console.log(players)
   console.log(p);
 });
 
-socket.on("msg", function(msg) {
+socket.on("msg", function (msg) {
   let message = document.createElement("li");
   message.textContent = msg;
   messages.appendChild(message);
   messages.scrollTo(0, messages.scrollHeight);
 });
 
-form.addEventListener("submit", function(e) {
+form.addEventListener("submit", function (e) {
   e.preventDefault();
   if (input.value) {
     socket.emit("msg", input.value);
@@ -90,24 +94,26 @@ class GameScene extends Phaser.Scene {
   }
 
   //update attr of game objects per game logic
-  update() {
+  update(_, delta) {
+    //correct speed across devices
+    timer += delta;
+    if (timer < TICKRATE_MS) {
+      return;
+    }
+    timer = 0;
     this.publishInput();
     for (let player of players) {
       if (!spritesMap.has(player.id)) {
         const container = this.add.container(
           player.positionX,
-          player.positionY
-        )
-        const sprite = this.physics.add.sprite(
-          0,
-          0,
-          "player",
+          player.positionY,
         );
-        const text = this.add.text(0, 65, player.displayName)
+        const sprite = this.physics.add.sprite(0, 0, "player");
+        const text = this.add.text(0, 65, player.displayName);
         text.setOrigin(0.5);
 
-        container.add(sprite)
-        container.add(text)
+        container.add(sprite);
+        container.add(text);
 
         spritesMap.set(player.id, container);
       } else {
@@ -116,7 +122,7 @@ class GameScene extends Phaser.Scene {
         container.setPosition(player.positionX, player.positionY);
 
         //get sprite from container
-        const sprite = container.list[0]
+        const sprite = container.list[0];
 
         //set sprite animations
         switch (player.anim) {
@@ -185,7 +191,7 @@ const config = {
 
 const game = new Phaser.Game(config);
 
-document.body.addEventListener("click", function(event) {
+document.body.addEventListener("click", function (event) {
   if (chatBox.contains(event.target)) {
     //    game.input.enabled = true;
     game.input.keyboard.enabled = false;
