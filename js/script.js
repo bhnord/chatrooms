@@ -16,21 +16,21 @@ const TICKRATE_MS = 75;
 //TODO: changeme
 const BASE_SERVER_URL = "http://localhost:3000";
 
-socket.on("move", function (p) {
+socket.on("move", function(p) {
   //set players to where they belong
   players = Array.from(p);
   //console.log(players)
   console.log(p);
 });
 
-socket.on("msg", function (msg) {
+socket.on("msg", function(msg) {
   let message = document.createElement("li");
   message.textContent = msg;
   messages.appendChild(message);
   messages.scrollTo(0, messages.scrollHeight);
 });
 
-form.addEventListener("submit", function (e) {
+form.addEventListener("submit", function(e) {
   e.preventDefault();
   if (input.value) {
     socket.emit("msg", input.value);
@@ -102,6 +102,9 @@ class GameScene extends Phaser.Scene {
     }
     timer = 0;
     this.publishInput();
+
+
+    //TODO: implement interpolation?
     for (let player of players) {
       if (!spritesMap.has(player.id)) {
         const container = this.add.container(
@@ -191,7 +194,7 @@ const config = {
 
 const game = new Phaser.Game(config);
 
-document.body.addEventListener("click", function (event) {
+document.body.addEventListener("click", function(event) {
   if (chatBox.contains(event.target)) {
     //    game.input.enabled = true;
     game.input.keyboard.enabled = false;
@@ -202,3 +205,86 @@ document.body.addEventListener("click", function (event) {
     console.log("out");
   }
 });
+
+
+
+
+//drawing part
+const canvas = document.getElementById('drawing-board')
+const toolbar = document.getElementById("toolbar")
+const ctx = canvas.getContext('2d')
+let lineWidth = 5;
+let isPainting = false;
+
+const getCursor = (e) => {
+  const rect = canvas.getBoundingClientRect()
+  const x = e.clientX - rect.left
+  const y = e.clientY - rect.top
+  return [x, y]
+}
+
+toolbar.addEventListener('click', e => {
+  switch (e.target.id) {
+    case 'clear':
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      break;
+    case 'send':
+      console.log(canvas)
+      const img = canvas.toDataURL('image/png')
+      console.log(img)
+      break;
+  }
+})
+
+toolbar.addEventListener('change', e => {
+  switch (e.target.id) {
+    case 'stroke':
+      ctx.strokeStyle = e.target.value;
+      break;
+    case 'lineWidth':
+      lineWidth = e.target.value;
+      break;
+
+  }
+})
+
+canvas.addEventListener('mousedown', e => {
+  isPainting = true;
+  //FIXME: get offsets for canvas
+  [startX, startY] = getCursor(e)
+})
+
+canvas.addEventListener('mouseup', e => {
+  isPainting = false;
+  ctx.stroke();
+  ctx.beginPath();
+})
+
+//FIXME: get offsets for canvas
+const draw = (e) => {
+  if (!isPainting) {
+    return;
+  }
+  ctx.lineWidth = lineWidth;
+  ctx.ineCap = 'round';
+  const [x, y] = getCursor(e)
+  ctx.lineTo(x, y)
+  ctx.stroke();
+}
+
+canvas.addEventListener('mousemove', draw)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -10,12 +10,6 @@ const Y_SPEED = 10;
 const X_SPEED = 10;
 const CANVAS_HEIGHT = 750;
 const CANVAS_WIDTH = 1400;
-const SHIP_PLATFORM = 718;
-const PLAYER_VERTICAL_MOVEMENT_UPDATE_INTERVAL = 1000;
-const PLAYER_SCORE_INCREMENT = 5;
-const P2_WORLD_TIME_STEP = 1 / 16;
-const GAME_TICKER_MS = 100;
-
 const TICKRATE_MS = 100;
 
 const players = new Map();
@@ -45,7 +39,7 @@ app.get("/player", (req, res) => {
 io.on("connection", (socket) => {
   let newPlayer = {
     id: currId,
-    displayName: "Player " + (currId += 1),
+    displayName: "Player " + (currId++),
     positionX: 0,
     positionY: 0,
     anim: "front",
@@ -92,15 +86,11 @@ io.on("connection", (socket) => {
     if (move.moveX === 0 && move.moveY === 0) {
       player.anim = "front";
     }
-
     change = true;
-
-    //    io.emit("move", Array.from(players.values()));
-    //    console.log("player " + player.id + " " + JSON.stringify(player));
   });
 });
 
-setInterval(function () {
+setInterval(function() {
   if (change) {
     io.emit("move", Array.from(players.values()));
     change = false;

@@ -14,7 +14,7 @@
   <body>
     <div id="game-container-outside">
       <div id="game-container-inside"></div>
-      <div id="chatroom">
+      <section id="chatroom">
         <div id="chat">
           <ul id="messages"></ul>
         </div>
@@ -22,7 +22,19 @@
           <input id="input" autocomplete="off" />
           <button>Send</button>
         </form>
-      </div>
-    </div>
+      </section>
+      <section id="drawing">
+        <div id="toolbar">
+          <input id="stroke" name='stroke' type = "color" />
+          <input id="lineWidth" name='lineWidth' type = "number" value="5"/>
+          <button id="clear">Clear</button>
+          <button id="send">Send</button>
+        </div>
+        <div class="drawing-board">
+          <canvas id="drawing-board" height= "200px" width= "400px"></canvas>
+        </div>
+      </section>
+ 
+   </div>
   </body>
 </html>
