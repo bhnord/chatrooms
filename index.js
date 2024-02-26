@@ -63,6 +63,12 @@ io.on("connection", (socket) => {
     console.log("chat: " + msg);
   });
 
+  socket.on("draw", (imgURL) => {
+    io.emit("draw", imgURL);
+    console.log("drawing: " + imgURL);
+  });
+
+
   socket.on("move", (msg) => {
     let move = JSON.parse(msg);
     let player = players.get(socket);

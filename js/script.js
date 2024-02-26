@@ -9,8 +9,21 @@ const messages = document.getElementById("messages");
 const form = document.getElementById("form");
 const input = document.getElementById("input");
 const chatBox = document.getElementById("chatroom");
+const drawingMessages = document.getElementById("drawing-messages")
 
-//essentially speed
+
+//scroll to bottom on new messages
+const chatMutationObserver = new MutationObserver(() => {
+  messages.scrollTo(0, messages.scrollHeight);
+});
+chatMutationObserver.observe(messages, { childList: true })
+
+const drawMutationObserver = new MutationObserver(() => {
+  drawingMessages.scrollTo(0, drawingMessages.scrollHeight);
+});
+drawMutationObserver.observe(drawingMessages, { childList: true });
+
+//essentially speed for now
 const TICKRATE_MS = 75;
 
 //TODO: changeme
@@ -27,8 +40,19 @@ socket.on("msg", function(msg) {
   let message = document.createElement("li");
   message.textContent = msg;
   messages.appendChild(message);
+
+
+  //TODO: use DOM mutation observer?
   messages.scrollTo(0, messages.scrollHeight);
 });
+
+socket.on("draw", function(imgURL) {
+  const li = document.createElement('li')
+  const img = new Image();
+  img.src = imgURL
+  li.appendChild(img)
+  drawingMessages.appendChild(li)
+})
 
 form.addEventListener("submit", function(e) {
   e.preventDefault();
@@ -216,6 +240,7 @@ const ctx = canvas.getContext('2d')
 let lineWidth = 5;
 let isPainting = false;
 
+
 const getCursor = (e) => {
   const rect = canvas.getBoundingClientRect()
   const x = e.clientX - rect.left
@@ -225,16 +250,18 @@ const getCursor = (e) => {
 
 toolbar.addEventListener('click', e => {
   switch (e.target.id) {
+    case 'send':
+      //send and clear
+      const imgURL = canvas.toDataURL('image/png')
+      socket.emit("draw", imgURL);
+
     case 'clear':
       ctx.clearRect(0, 0, canvas.width, canvas.height)
       break;
-    case 'send':
-      console.log(canvas)
-      const img = canvas.toDataURL('image/png')
-      console.log(img)
-      break;
+
   }
 })
+
 
 toolbar.addEventListener('change', e => {
   switch (e.target.id) {
@@ -273,18 +300,4 @@ const draw = (e) => {
 }
 
 canvas.addEventListener('mousemove', draw)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
