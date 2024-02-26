@@ -14,6 +14,7 @@ const closeChat = document.getElementById("close-chat");
 const canvas = document.getElementById("drawing-board");
 const toolbar = document.getElementById("toolbar");
 const ctx = canvas.getContext("2d");
+const playerExit = new Set();
 let lineWidth = 5;
 let isPainting = false;
 
@@ -40,7 +41,7 @@ closeChat.onclick = () => {
 
 //rate of sending info to server
 const TICKRATE_MS = 25;
-const SERVER_UPDATE_RATE = 100;
+const SERVER_UPDATE_RATE = 100 + 10; //add 10 ms to smoothen movement 
 
 //TODO: changeme
 const BASE_SERVER_URL = "http://localhost:3000";
@@ -48,16 +49,23 @@ const BASE_SERVER_URL = "http://localhost:3000";
 socket.on("move", function(p) {
   //set players to where they belong
   players = Array.from(p);
+  playerExit.clear();
+  console.log(players)
+  console.log(spritesMap)
 });
 
 socket.on("msg", function(msg) {
   let message = document.createElement("li");
   message.textContent = msg;
   messages.appendChild(message);
-
-  //TODO: use DOM mutation observer?
-  messages.scrollTo(0, messages.scrollHeight);
 });
+
+//TODO: fix remove container
+socket.on("player_exit", function(id) {
+  playerExit.add(id)
+  spritesMap.get(id).destroy();
+  spritesMap.delete(id);
+})
 
 socket.on("draw", function(imgURL) {
   const li = document.createElement("li");
@@ -145,6 +153,9 @@ class GameScene extends Phaser.Scene {
 
     //TODO: implement interpolation?
     for (let player of players) {
+      if (playerExit.has(player.id)) {
+        continue;
+      }
       if (!spritesMap.has(player.id)) {
         const container = this.add.container(
           player.positionX,

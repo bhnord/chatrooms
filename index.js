@@ -51,8 +51,8 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     console.log("disconnected");
+    io.emit("player_exit", players.get(socket).id)
     players.delete(socket);
-    change = true;
   });
 
   //TODO: FIX CONCURRENCY
