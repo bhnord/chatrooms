@@ -23,8 +23,8 @@ const drawMutationObserver = new MutationObserver(() => {
 });
 drawMutationObserver.observe(drawingMessages, { childList: true });
 
-//essentially speed for now
-const TICKRATE_MS = 75;
+//rate of sending info to server
+const TICKRATE_MS = 25;
 
 //TODO: changeme
 const BASE_SERVER_URL = "http://localhost:3000";

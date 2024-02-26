@@ -6,8 +6,8 @@ const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
 
-const Y_SPEED = 10;
-const X_SPEED = 10;
+const Y_SPEED = 20;
+const X_SPEED = 20;
 const CANVAS_HEIGHT = 750;
 const CANVAS_WIDTH = 1400;
 const TICKRATE_MS = 100;
@@ -59,13 +59,15 @@ io.on("connection", (socket) => {
   socket.emit("playerId", currId);
 
   socket.on("msg", (msg) => {
-    io.emit("msg", players.get(socket).displayName + ": " + msg);
-    console.log("chat: " + msg);
+    const name = players.get(socket).displayName
+    io.emit("msg", name + ": " + msg);
+    console.log(name + ": " + msg);
   });
 
   socket.on("draw", (imgURL) => {
+    const name = players.get(socket).displayName
     io.emit("draw", imgURL);
-    console.log("drawing: " + imgURL);
+    console.log(name + " sent a drawing!");
   });
 
 
