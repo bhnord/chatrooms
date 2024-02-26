@@ -11,6 +11,13 @@ const chatBox = document.getElementById("chatroom");
 const drawingMessages = document.getElementById("drawing-messages");
 const closeDrawing = document.getElementById("close-drawing");
 const closeChat = document.getElementById("close-chat");
+const canvas = document.getElementById("drawing-board");
+const toolbar = document.getElementById("toolbar");
+const ctx = canvas.getContext("2d");
+let lineWidth = 5;
+let isPainting = false;
+
+
 
 //scroll to bottom on new messages
 const chatMutationObserver = new MutationObserver(() => {
@@ -30,20 +37,19 @@ closeChat.onclick = () => {
   messages.classList.toggle("closed");
 };
 
+
 //rate of sending info to server
 const TICKRATE_MS = 25;
 
 //TODO: changeme
 const BASE_SERVER_URL = "http://localhost:3000";
 
-socket.on("move", function (p) {
+socket.on("move", function(p) {
   //set players to where they belong
   players = Array.from(p);
-  //console.log(players)
-  console.log(p);
 });
 
-socket.on("msg", function (msg) {
+socket.on("msg", function(msg) {
   let message = document.createElement("li");
   message.textContent = msg;
   messages.appendChild(message);
@@ -52,15 +58,18 @@ socket.on("msg", function (msg) {
   messages.scrollTo(0, messages.scrollHeight);
 });
 
-socket.on("draw", function (imgURL) {
+socket.on("draw", function(imgURL) {
   const li = document.createElement("li");
   const img = new Image();
   img.src = imgURL;
   li.appendChild(img);
   drawingMessages.appendChild(li);
+  li.onclick = (e) => {
+    ctx.drawImage(e.target, 0, 0);
+  }
 });
 
-form.addEventListener("submit", function (e) {
+form.addEventListener("submit", function(e) {
   e.preventDefault();
   if (input.value) {
     socket.emit("msg", input.value);
@@ -223,25 +232,15 @@ const config = {
 
 const game = new Phaser.Game(config);
 
-document.body.addEventListener("click", function (event) {
+document.body.addEventListener("click", function(event) {
   if (chatBox.contains(event.target)) {
-    //    game.input.enabled = true;
     game.input.keyboard.enabled = false;
-    console.log("in");
   } else {
     game.input.keyboard.enabled = true;
-    //   game.input.enabled = false;
-    console.log("out");
   }
 });
 
 //drawing part
-const canvas = document.getElementById("drawing-board");
-const toolbar = document.getElementById("toolbar");
-const ctx = canvas.getContext("2d");
-let lineWidth = 5;
-let isPainting = false;
-
 const getCursor = (e) => {
   const rect = canvas.getBoundingClientRect();
   const x = e.clientX - rect.left;
