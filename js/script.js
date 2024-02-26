@@ -40,6 +40,7 @@ closeChat.onclick = () => {
 
 //rate of sending info to server
 const TICKRATE_MS = 25;
+const SERVER_UPDATE_RATE = 100;
 
 //TODO: changeme
 const BASE_SERVER_URL = "http://localhost:3000";
@@ -160,7 +161,14 @@ class GameScene extends Phaser.Scene {
       } else {
         //set container to correct location
         const container = spritesMap.get(player.id);
-        container.setPosition(player.positionX, player.positionY);
+        this.tweens.add({
+          targets: container,
+          x: player.positionX,
+          y: player.positionY,
+          ease: 'Power1',
+          duration: SERVER_UPDATE_RATE
+        })
+        //        container.setPosition(player.positionX, player.positionY);
 
         //get sprite from container
         const sprite = container.list[0];
