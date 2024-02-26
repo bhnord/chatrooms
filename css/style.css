@@ -1,14 +1,17 @@
-#messages::-webkit-scrollbar, #drawing-messages::-webkit-scrollbar {
+#messages::-webkit-scrollbar,
+#drawing-messages::-webkit-scrollbar {
   width: 10px;
 }
 
-#messages::-webkit-scrollbar-track, #drawing-messages::-webkit-scrollbar-track{
+#messages::-webkit-scrollbar-track,
+#drawing-messages::-webkit-scrollbar-track {
   border-radius: 8px;
   background-color: #e7e7e7;
   border: 1px solid #cacaca;
 }
 
-#messages::-webkit-scrollbar-thumb, #drawing-messages::-webkit-scrollbar-thumb{
+#messages::-webkit-scrollbar-thumb,
+#drawing-messages::-webkit-scrollbar-thumb {
   border-radius: 8px;
   background-color: #d55959;
 }
@@ -37,10 +40,9 @@ body {
   right: 0;
 }
 
-#drawing-board{
+#drawing-board {
   background-color: white;
 }
-
 
 #form {
   background: rgba(0, 0, 0, 0.15);
@@ -81,6 +83,10 @@ body {
   max-height: 25vh;
   overflow: auto;
   border-radius: 3px;
+  transition: max-height 1s ease-in-out;
+  &.closed {
+    max-height: 10px;
+  }
 }
 
 #messages > li {
@@ -88,13 +94,18 @@ body {
   background: #efefef;
 }
 
-#drawing-messages{
+#drawing-messages {
   list-style-type: none;
   background-color: white;
   margin: 0;
   padding: 0;
   overflow: auto;
   max-height: 50vh;
+  transition: max-height 1s ease-in-out;
+
+  &.closed {
+    max-height: 10px;
+  }
 }
 
 #drawing-messages > li {

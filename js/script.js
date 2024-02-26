@@ -4,24 +4,31 @@ let spritesMap = new Map();
 let players = [];
 let isStopped = true;
 let timer = 0;
-const chat = document.getElementById("chat");
 const messages = document.getElementById("messages");
 const form = document.getElementById("form");
 const input = document.getElementById("input");
 const chatBox = document.getElementById("chatroom");
-const drawingMessages = document.getElementById("drawing-messages")
-
+const drawingMessages = document.getElementById("drawing-messages");
+const closeDrawing = document.getElementById("close-drawing");
+const closeChat = document.getElementById("close-chat");
 
 //scroll to bottom on new messages
 const chatMutationObserver = new MutationObserver(() => {
   messages.scrollTo(0, messages.scrollHeight);
 });
-chatMutationObserver.observe(messages, { childList: true })
+chatMutationObserver.observe(messages, { childList: true });
 
 const drawMutationObserver = new MutationObserver(() => {
   drawingMessages.scrollTo(0, drawingMessages.scrollHeight);
 });
 drawMutationObserver.observe(drawingMessages, { childList: true });
+
+closeDrawing.onclick = () => {
+  drawingMessages.classList.toggle("closed");
+};
+closeChat.onclick = () => {
+  messages.classList.toggle("closed");
+};
 
 //rate of sending info to server
 const TICKRATE_MS = 25;
@@ -29,32 +36,31 @@ const TICKRATE_MS = 25;
 //TODO: changeme
 const BASE_SERVER_URL = "http://localhost:3000";
 
-socket.on("move", function(p) {
+socket.on("move", function (p) {
   //set players to where they belong
   players = Array.from(p);
   //console.log(players)
   console.log(p);
 });
 
-socket.on("msg", function(msg) {
+socket.on("msg", function (msg) {
   let message = document.createElement("li");
   message.textContent = msg;
   messages.appendChild(message);
-
 
   //TODO: use DOM mutation observer?
   messages.scrollTo(0, messages.scrollHeight);
 });
 
-socket.on("draw", function(imgURL) {
-  const li = document.createElement('li')
+socket.on("draw", function (imgURL) {
+  const li = document.createElement("li");
   const img = new Image();
-  img.src = imgURL
-  li.appendChild(img)
-  drawingMessages.appendChild(li)
-})
+  img.src = imgURL;
+  li.appendChild(img);
+  drawingMessages.appendChild(li);
+});
 
-form.addEventListener("submit", function(e) {
+form.addEventListener("submit", function (e) {
   e.preventDefault();
   if (input.value) {
     socket.emit("msg", input.value);
@@ -126,7 +132,6 @@ class GameScene extends Phaser.Scene {
     }
     timer = 0;
     this.publishInput();
-
 
     //TODO: implement interpolation?
     for (let player of players) {
@@ -218,7 +223,7 @@ const config = {
 
 const game = new Phaser.Game(config);
 
-document.body.addEventListener("click", function(event) {
+document.body.addEventListener("click", function (event) {
   if (chatBox.contains(event.target)) {
     //    game.input.enabled = true;
     game.input.keyboard.enabled = false;
@@ -230,62 +235,55 @@ document.body.addEventListener("click", function(event) {
   }
 });
 
-
-
-
 //drawing part
-const canvas = document.getElementById('drawing-board')
-const toolbar = document.getElementById("toolbar")
-const ctx = canvas.getContext('2d')
+const canvas = document.getElementById("drawing-board");
+const toolbar = document.getElementById("toolbar");
+const ctx = canvas.getContext("2d");
 let lineWidth = 5;
 let isPainting = false;
 
-
 const getCursor = (e) => {
-  const rect = canvas.getBoundingClientRect()
-  const x = e.clientX - rect.left
-  const y = e.clientY - rect.top
-  return [x, y]
-}
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  return [x, y];
+};
 
-toolbar.addEventListener('click', e => {
+toolbar.addEventListener("click", (e) => {
   switch (e.target.id) {
-    case 'send':
+    case "send":
       //send and clear
-      const imgURL = canvas.toDataURL('image/png')
+      const imgURL = canvas.toDataURL("image/png");
       socket.emit("draw", imgURL);
 
-    case 'clear':
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
+    case "clear":
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       break;
-
   }
-})
+});
 
-
-toolbar.addEventListener('change', e => {
+toolbar.addEventListener("change", (e) => {
   switch (e.target.id) {
-    case 'stroke':
+    case "stroke":
       ctx.strokeStyle = e.target.value;
       break;
-    case 'lineWidth':
+    case "lineWidth":
       lineWidth = e.target.value;
       break;
-
   }
-})
+});
 
-canvas.addEventListener('mousedown', e => {
+canvas.addEventListener("mousedown", (e) => {
   isPainting = true;
   //FIXME: get offsets for canvas
-  [startX, startY] = getCursor(e)
-})
+  [startX, startY] = getCursor(e);
+});
 
-canvas.addEventListener('mouseup', e => {
+canvas.addEventListener("mouseup", (e) => {
   isPainting = false;
   ctx.stroke();
   ctx.beginPath();
-})
+});
 
 //FIXME: get offsets for canvas
 const draw = (e) => {
@@ -293,11 +291,10 @@ const draw = (e) => {
     return;
   }
   ctx.lineWidth = lineWidth;
-  ctx.ineCap = 'round';
-  const [x, y] = getCursor(e)
-  ctx.lineTo(x, y)
+  ctx.ineCap = "round";
+  const [x, y] = getCursor(e);
+  ctx.lineTo(x, y);
   ctx.stroke();
-}
+};
 
-canvas.addEventListener('mousemove', draw)
-
+canvas.addEventListener("mousemove", draw);
