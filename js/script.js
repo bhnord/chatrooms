@@ -18,8 +18,6 @@ const playerExit = new Set();
 let lineWidth = 5;
 let isPainting = false;
 
-
-
 //scroll to bottom on new messages
 const chatMutationObserver = new MutationObserver(() => {
   messages.scrollTo(0, messages.scrollHeight);
@@ -38,36 +36,35 @@ closeChat.onclick = () => {
   messages.classList.toggle("closed");
 };
 
-
 //rate of sending info to server
 const TICKRATE_MS = 25;
-const SERVER_UPDATE_RATE = 100 + 10; //add 10 ms to smoothen movement 
+const SERVER_UPDATE_RATE = 100 + 10; //add 10 ms to smoothen movement
 
 //TODO: changeme
 const BASE_SERVER_URL = "http://localhost:3000";
 
-socket.on("move", function(p) {
+socket.on("move", function (p) {
   //set players to where they belong
   players = Array.from(p);
   playerExit.clear();
-  console.log(players)
-  console.log(spritesMap)
+  console.log(players);
+  console.log(spritesMap);
 });
 
-socket.on("msg", function(msg) {
+socket.on("msg", function (msg) {
   let message = document.createElement("li");
   message.textContent = msg;
   messages.appendChild(message);
 });
 
 //TODO: fix remove container
-socket.on("player_exit", function(id) {
-  playerExit.add(id)
+socket.on("player_exit", function (id) {
+  playerExit.add(id);
   spritesMap.get(id).destroy();
   spritesMap.delete(id);
-})
+});
 
-socket.on("draw", function(imgURL) {
+socket.on("draw", function (imgURL) {
   const li = document.createElement("li");
   const img = new Image();
   img.src = imgURL;
@@ -75,10 +72,10 @@ socket.on("draw", function(imgURL) {
   drawingMessages.appendChild(li);
   li.onclick = (e) => {
     ctx.drawImage(e.target, 0, 0);
-  }
+  };
 });
 
-form.addEventListener("submit", function(e) {
+form.addEventListener("submit", function (e) {
   e.preventDefault();
   if (input.value) {
     socket.emit("msg", input.value);
@@ -95,8 +92,8 @@ class GameScene extends Phaser.Scene {
   preload() {
     this.load.setBaseURL(BASE_SERVER_URL);
     this.load.spritesheet("player", "player", {
-      frameWidth: 82,
-      frameHeight: 107,
+      frameWidth: 16,
+      frameHeight: 32,
     });
   }
 
@@ -111,25 +108,25 @@ class GameScene extends Phaser.Scene {
 
     this.anims.create({
       key: "down",
-      frames: this.anims.generateFrameNumbers("player", { start: 0, end: 2 }),
+      frames: this.anims.generateFrameNumbers("player", { start: 0, end: 7 }),
       frameRate: 10,
       repeat: -1,
     });
     this.anims.create({
       key: "right",
-      frames: this.anims.generateFrameNumbers("player", { start: 3, end: 5 }),
+      frames: this.anims.generateFrameNumbers("player", { start: 8, end: 11 }),
       frameRate: 10,
       repeat: -1,
     });
     this.anims.create({
       key: "up",
-      frames: this.anims.generateFrameNumbers("player", { start: 6, end: 9 }),
+      frames: this.anims.generateFrameNumbers("player", { start: 0, end: 7 }),
       frameRate: 10,
       repeat: -1,
     });
     this.anims.create({
       key: "left",
-      frames: this.anims.generateFrameNumbers("player", { start: 10, end: 12 }),
+      frames: this.anims.generateFrameNumbers("player", { start: 12, end: 15 }),
       frameRate: 10,
       repeat: -1,
     });
@@ -162,6 +159,7 @@ class GameScene extends Phaser.Scene {
           player.positionY,
         );
         const sprite = this.physics.add.sprite(0, 0, "player");
+        sprite.setScale(3);
         const text = this.add.text(0, 65, player.displayName);
         text.setOrigin(0.5);
 
@@ -176,9 +174,9 @@ class GameScene extends Phaser.Scene {
           targets: container,
           x: player.positionX,
           y: player.positionY,
-          ease: 'Power1',
-          duration: SERVER_UPDATE_RATE
-        })
+          ease: "Power1",
+          duration: SERVER_UPDATE_RATE,
+        });
         //        container.setPosition(player.positionX, player.positionY);
 
         //get sprite from container
@@ -247,11 +245,12 @@ const config = {
   physics: {
     default: "arcade",
   },
+  pixelArt: true,
 };
 
 const game = new Phaser.Game(config);
 
-document.body.addEventListener("click", function(event) {
+document.body.addEventListener("click", function (event) {
   if (chatBox.contains(event.target)) {
     game.input.keyboard.enabled = false;
   } else {
@@ -316,3 +315,4 @@ const draw = (e) => {
 };
 
 canvas.addEventListener("mousemove", draw);
+ctx.imageSmoothingEnabled = false;

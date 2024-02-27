@@ -33,13 +33,13 @@ app.get("/avatarPengu", (req, res) => {
 });
 
 app.get("/player", (req, res) => {
-  res.sendFile(__dirname + "/assets/pixilart-sprite.png");
+  res.sendFile(__dirname + "/assets/spritesheet.png");
 });
 
 io.on("connection", (socket) => {
   let newPlayer = {
     id: currId,
-    displayName: "Player " + (currId++),
+    displayName: "Player " + currId++,
     positionX: 0,
     positionY: 0,
     anim: "front",
@@ -51,7 +51,7 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     console.log("disconnected");
-    io.emit("player_exit", players.get(socket).id)
+    io.emit("player_exit", players.get(socket).id);
     players.delete(socket);
   });
 
@@ -59,17 +59,16 @@ io.on("connection", (socket) => {
   socket.emit("playerId", currId);
 
   socket.on("msg", (msg) => {
-    const name = players.get(socket).displayName
+    const name = players.get(socket).displayName;
     io.emit("msg", name + ": " + msg);
     console.log(name + ": " + msg);
   });
 
   socket.on("draw", (imgURL) => {
-    const name = players.get(socket).displayName
+    const name = players.get(socket).displayName;
     io.emit("draw", imgURL);
     console.log(name + " sent a drawing!");
   });
-
 
   socket.on("move", (msg) => {
     let move = JSON.parse(msg);
@@ -98,7 +97,7 @@ io.on("connection", (socket) => {
   });
 });
 
-setInterval(function() {
+setInterval(function () {
   if (change) {
     io.emit("move", Array.from(players.values()));
     change = false;
