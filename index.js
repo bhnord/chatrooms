@@ -36,6 +36,10 @@ app.get("/player", (req, res) => {
   res.sendFile(__dirname + "/assets/spritesheet.png");
 });
 
+app.get("/beer", (req, res) => {
+  res.sendFile(__dirname + "/assets/beer.png");
+});
+
 io.on("connection", (socket) => {
   let newPlayer = {
     id: currId,
@@ -97,7 +101,7 @@ io.on("connection", (socket) => {
   });
 });
 
-setInterval(function () {
+setInterval(function() {
   if (change) {
     io.emit("move", Array.from(players.values()));
     change = false;
