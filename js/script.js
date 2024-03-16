@@ -41,7 +41,7 @@ const TICKRATE_MS = 25;
 const SERVER_UPDATE_RATE = 100 + 10; //add 10 ms to smoothen movement
 
 //TODO: changeme
-const BASE_SERVER_URL = "http://localhost:3000";
+const BASE_SERVER_URL = window.location.href;
 
 socket.on("move", function(p) {
   //set players to where they belong
@@ -91,12 +91,12 @@ class GameScene extends Phaser.Scene {
   //load assets
   preload() {
     this.load.setBaseURL(BASE_SERVER_URL);
-    this.load.spritesheet("player", "player", {
+    this.load.spritesheet("player", "player.png", {
       frameWidth: 16,
       frameHeight: 32,
     });
 
-    this.load.image("beer", "beer", {
+    this.load.image("beer", "beer.png", {
       frameWidth: 16,
       frameHeight: 16
     });

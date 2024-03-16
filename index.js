@@ -32,11 +32,11 @@ app.get("/avatarPengu", (req, res) => {
   res.sendFile(__dirname + "/assets/chinstrap.png");
 });
 
-app.get("/player", (req, res) => {
+app.get("/player.png", (req, res) => {
   res.sendFile(__dirname + "/assets/spritesheet.png");
 });
 
-app.get("/beer", (req, res) => {
+app.get("/beer.png", (req, res) => {
   res.sendFile(__dirname + "/assets/beer.png");
 });
 
