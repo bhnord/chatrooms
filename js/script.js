@@ -17,6 +17,7 @@ const ctx = canvas.getContext("2d");
 const playerExit = new Set();
 let lineWidth = 5;
 let isPainting = false;
+const BASE_SERVER_URL = window.location.href;
 
 //scroll to bottom on new messages
 const chatMutationObserver = new MutationObserver(() => {
@@ -40,10 +41,7 @@ closeChat.onclick = () => {
 const TICKRATE_MS = 25;
 const SERVER_UPDATE_RATE = 100 + 10; //add 10 ms to smoothen movement
 
-//TODO: changeme
-const BASE_SERVER_URL = window.location.href;
-
-socket.on("move", function(p) {
+socket.on("move", function (p) {
   //set players to where they belong
   players = Array.from(p);
   playerExit.clear();
@@ -51,20 +49,20 @@ socket.on("move", function(p) {
   console.log(spritesMap);
 });
 
-socket.on("msg", function(msg) {
+socket.on("msg", function (msg) {
   let message = document.createElement("li");
   message.textContent = msg;
   messages.appendChild(message);
 });
 
 //TODO: fix remove container
-socket.on("player_exit", function(id) {
+socket.on("player_exit", function (id) {
   playerExit.add(id);
   spritesMap.get(id).destroy();
   spritesMap.delete(id);
 });
 
-socket.on("draw", function(imgURL) {
+socket.on("draw", function (imgURL) {
   const li = document.createElement("li");
   const img = new Image();
   img.src = imgURL;
@@ -75,7 +73,7 @@ socket.on("draw", function(imgURL) {
   };
 });
 
-form.addEventListener("submit", function(e) {
+form.addEventListener("submit", function (e) {
   e.preventDefault();
   if (input.value) {
     socket.emit("msg", input.value);
@@ -98,7 +96,7 @@ class GameScene extends Phaser.Scene {
 
     this.load.image("beer", "beer.png", {
       frameWidth: 16,
-      frameHeight: 16
+      frameHeight: 16,
     });
   }
 
@@ -154,10 +152,8 @@ class GameScene extends Phaser.Scene {
     timer = 0;
     this.publishInput();
 
-
     //TODO: move to server side
     this.getBeer();
-
 
     //TODO: implement interpolation?
     for (let player of players) {
@@ -247,11 +243,14 @@ class GameScene extends Phaser.Scene {
   getBeer() {
     //TODO: move logic
     if (this.cursors.space.isDown) {
-      const beer = this.physics.add.image(Math.random() * 1000, Math.random() * 1000, "beer")
-      beer.setScale(2)
+      const beer = this.physics.add.image(
+        Math.random() * 1000,
+        Math.random() * 1000,
+        "beer",
+      );
+      beer.setScale(2);
     }
   }
-
 }
 
 const config = {
@@ -270,7 +269,7 @@ const config = {
 
 const game = new Phaser.Game(config);
 
-document.body.addEventListener("click", function(event) {
+document.body.addEventListener("click", function (event) {
   if (chatBox.contains(event.target)) {
     game.input.keyboard.enabled = false;
   } else {
