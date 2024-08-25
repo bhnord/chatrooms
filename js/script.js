@@ -259,7 +259,7 @@ const config = {
     mode: Phaser.Scale.RESIZE,
     parent: "game-container-inside",
   },
-  backgroundColor: "#FFFFF",
+  backgroundColor: "#1e2030",
   scene: [GameScene],
   physics: {
     default: "arcade",

@@ -16,27 +16,26 @@ const players = new Map();
 let currId = 0;
 let change = false;
 
-app.get("/", (req, res) => {
+app.get("/", (_, res) => {
   res.sendFile(__dirname + "/index.html");
-  console.log("dd");
 });
 
-app.get("/js/script.js", (req, res) => {
+app.get("/js/script.js", (_, res) => {
   res.sendFile(__dirname + "/js/script.js");
 });
-app.get("/css/style.css", (req, res) => {
+app.get("/css/style.css", (_, res) => {
   res.sendFile(__dirname + "/css/style.css");
 });
 
-app.get("/avatarPengu", (req, res) => {
+app.get("/avatarPengu", (_, res) => {
   res.sendFile(__dirname + "/assets/chinstrap.png");
 });
 
-app.get("/player.png", (req, res) => {
+app.get("/player.png", (_, res) => {
   res.sendFile(__dirname + "/assets/spritesheet.png");
 });
 
-app.get("/beer.png", (req, res) => {
+app.get("/beer.png", (_, res) => {
   res.sendFile(__dirname + "/assets/beer.png");
 });
 
@@ -101,7 +100,7 @@ io.on("connection", (socket) => {
   });
 });
 
-setInterval(function() {
+setInterval(function () {
   if (change) {
     io.emit("move", Array.from(players.values()));
     change = false;
