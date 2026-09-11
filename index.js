@@ -6,10 +6,13 @@ const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
 
-const Y_SPEED = 20;
-const X_SPEED = 20;
-const CANVAS_HEIGHT = 750;
-const CANVAS_WIDTH = 1400;
+const Y_SPEED = 12;
+const X_SPEED = 12;
+const CANVAS_HEIGHT = 1100;
+const CANVAS_WIDTH = 2000;
+const PIXEL_SCALE = 3;
+const SPRITE_WIDTH = 16 * PIXEL_SCALE;
+const SPRITE_HEIGHT = 32 * PIXEL_SCALE;
 const TICKRATE_MS = 100;
 
 const players = new Map();
@@ -59,7 +62,7 @@ io.on("connection", (socket) => {
   });
 
   //TODO: FIX CONCURRENCY
-  socket.emit("playerId", currId);
+  socket.emit("playerId", newPlayer.id);
 
   socket.on("msg", (msg) => {
     const name = players.get(socket).displayName;
@@ -92,6 +95,15 @@ io.on("connection", (socket) => {
       player.positionY += Y_SPEED;
       player.anim = "down";
     }
+
+    player.positionX = Math.max(
+      0,
+      Math.min(player.positionX, CANVAS_WIDTH - SPRITE_WIDTH),
+    );
+    player.positionY = Math.max(
+      0,
+      Math.min(player.positionY, CANVAS_HEIGHT - SPRITE_HEIGHT),
+    );
 
     if (move.moveX === 0 && move.moveY === 0) {
       player.anim = "front";

@@ -1,5 +1,7 @@
 let socket = io();
 let myId = -1;
+const WORLD_WIDTH = 2000;
+const WORLD_HEIGHT = 1100;
 let spritesMap = new Map();
 let players = [];
 let isStopped = true;
@@ -14,27 +16,53 @@ const closeChat = document.getElementById("close-chat");
 const canvas = document.getElementById("drawing-board");
 const toolbar = document.getElementById("toolbar");
 const ctx = canvas.getContext("2d");
+const chatBadge = document.getElementById("chat-badge");
+const drawBadge = document.getElementById("draw-badge");
+let chatUnread = 0;
+let drawUnread = 0;
+
+function setBadge(badge, count) {
+  if (count > 0) {
+    badge.textContent = count;
+    badge.classList.add("show");
+  } else {
+    badge.textContent = "";
+    badge.classList.remove("show");
+  }
+}
 const playerExit = new Set();
 let lineWidth = 5;
 let isPainting = false;
 const BASE_SERVER_URL = window.location.href;
 
 //scroll to bottom on new messages
+const scrollToBottom = (el) => {
+  el.scrollTop = el.scrollHeight;
+};
+
 const chatMutationObserver = new MutationObserver(() => {
-  messages.scrollTo(0, messages.scrollHeight);
+  scrollToBottom(messages);
 });
 chatMutationObserver.observe(messages, { childList: true });
 
 const drawMutationObserver = new MutationObserver(() => {
-  drawingMessages.scrollTo(0, drawingMessages.scrollHeight);
+  scrollToBottom(drawingMessages);
 });
 drawMutationObserver.observe(drawingMessages, { childList: true });
 
 closeDrawing.onclick = () => {
   drawingMessages.classList.toggle("closed");
+  if (!drawingMessages.classList.contains("closed")) {
+    drawUnread = 0;
+    setBadge(drawBadge, drawUnread);
+  }
 };
 closeChat.onclick = () => {
   messages.classList.toggle("closed");
+  if (!messages.classList.contains("closed")) {
+    chatUnread = 0;
+    setBadge(chatBadge, chatUnread);
+  }
 };
 
 //rate of sending info to server
@@ -53,6 +81,10 @@ socket.on("msg", function (msg) {
   let message = document.createElement("li");
   message.textContent = msg;
   messages.appendChild(message);
+  if (messages.classList.contains("closed")) {
+    chatUnread++;
+    setBadge(chatBadge, chatUnread);
+  }
 });
 
 //TODO: fix remove container
@@ -66,11 +98,22 @@ socket.on("draw", function (imgURL) {
   const li = document.createElement("li");
   const img = new Image();
   img.src = imgURL;
+  img.onload = () => {
+    scrollToBottom(drawingMessages);
+  };
   li.appendChild(img);
   drawingMessages.appendChild(li);
   li.onclick = (e) => {
     ctx.drawImage(e.target, 0, 0);
   };
+  if (drawingMessages.classList.contains("closed")) {
+    drawUnread++;
+    setBadge(drawBadge, drawUnread);
+  }
+});
+
+socket.on("playerId", function (id) {
+  myId = id;
 });
 
 form.addEventListener("submit", function (e) {
@@ -140,6 +183,12 @@ class GameScene extends Phaser.Scene {
       frameRate: 10,
       repeat: -1,
     });
+
+    this.cameras.main.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+
+    const bounds = this.add.graphics();
+    bounds.lineStyle(3, 0xffffff, 0.3);
+    bounds.strokeRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
   }
 
   //update attr of game objects per game logic
@@ -156,6 +205,12 @@ class GameScene extends Phaser.Scene {
     this.getBeer();
 
     //TODO: implement interpolation?
+    if (myId !== -1) {
+      const self = spritesMap.get(myId);
+      if (self) {
+        this.cameras.main.startFollow(self, true, 0.1, 0.1);
+      }
+    }
     for (let player of players) {
       if (playerExit.has(player.id)) {
         continue;
@@ -216,6 +271,14 @@ class GameScene extends Phaser.Scene {
       moveY: 0,
     };
 
+    if (document.activeElement === input) {
+      if (!isStopped) {
+        isStopped = true;
+        socket.emit("move", JSON.stringify(move));
+      }
+      return;
+    }
+
     if (this.cursors.up.isDown) {
       move.moveY = -1;
       isStopped = false;
@@ -244,8 +307,8 @@ class GameScene extends Phaser.Scene {
     //TODO: move logic
     if (this.cursors.space.isDown) {
       const beer = this.physics.add.image(
-        Math.random() * 1000,
-        Math.random() * 1000,
+        Phaser.Math.Between(0, WORLD_WIDTH),
+        Phaser.Math.Between(0, WORLD_HEIGHT),
         "beer",
       );
       beer.setScale(2);
@@ -256,8 +319,11 @@ class GameScene extends Phaser.Scene {
 const config = {
   type: Phaser.AUTO,
   scale: {
-    mode: Phaser.Scale.RESIZE,
+    mode: Phaser.Scale.FIT,
     parent: "game-container-inside",
+    width: 2000,
+    height: 1100,
+    autoCenter: Phaser.Scale.CENTER_BOTH,
   },
   backgroundColor: "#1e2030",
   scene: [GameScene],
@@ -268,14 +334,6 @@ const config = {
 };
 
 const game = new Phaser.Game(config);
-
-document.body.addEventListener("click", function (event) {
-  if (chatBox.contains(event.target)) {
-    game.input.keyboard.enabled = false;
-  } else {
-    game.input.keyboard.enabled = true;
-  }
-});
 
 //drawing part
 const getCursor = (e) => {

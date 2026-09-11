@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <title></title>
+    <title>Chatrooms</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="chatrooms" />
@@ -16,17 +16,17 @@
       <div id="game-container-inside"></div>
       <section id="chatroom">
         <div>
-          <button id="close-chat">open/close</button>
+          <button id="close-chat">Chat<span id="chat-badge" class="badge"></span></button>
           <ul id="messages"></ul>
         </div>
         <form id="form" action="">
-          <input id="input" autocomplete="off" />
+          <input id="input" autocomplete="off" placeholder="Type a message..." />
           <button>Send</button>
         </form>
       </section>
       <section id="drawing">
         <div>
-          <button id="close-drawing">open/close</button>
+          <button id="close-drawing">Drawing<span id="draw-badge" class="badge"></span></button>
           <ul id="drawing-messages"></ul>
         </div>
         <div id="toolbar">
